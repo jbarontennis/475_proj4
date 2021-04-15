@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">475_proj4</string>
+    <string name="URLpet">https://www.pcs.cnu.edu/~kperkins/pets/pets.json/</string>
 </resources>
