@@ -63,10 +63,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //setSupportActionBar((Toolbar)findViewById(R.id.toolbar1));
         getSupportActionBar().setDisplayShowTitleEnabled(true);
         ConnectionCheck myCheck = new ConnectionCheck(this);
-
 
         myPreference = PreferenceManager.getDefaultSharedPreferences(this);
         listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
@@ -75,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
                     url = myPreference.getString(key, getString(R.string.URLpet));
                     if (myCheck.isNetworkReachable()) {
                         //loadImage(petList.get(0).file);
+                        petList.clear();
                        downloadJson();
                     } else {
                         petList.clear();
@@ -152,6 +151,7 @@ public class MainActivity extends AppCompatActivity {
         protected int statusCode = 0;
         protected String myURL;
         String data;
+        boolean flag = true;
 
         public Download(String url) {
             myURL = url;
@@ -183,12 +183,14 @@ public class MainActivity extends AppCompatActivity {
                     return sb.toString();
 
                 } finally {
+                    flag = true;
                     if (in != null) {
                         in.close();
                     }
                     connection.disconnect();
                 }
             } catch (Exception exc) {
+                flag = false;
                 return null;
             }
         }
@@ -201,7 +203,7 @@ public class MainActivity extends AppCompatActivity {
             vp = findViewById(R.id.view_pager);
             vp.setAdapter(csa);
             csa.notifyDataSetChanged();
-            //loadImage("p4.png");
+
         }
 
         @Override
@@ -291,6 +293,7 @@ public class MainActivity extends AppCompatActivity {
             protected void onPostExecute(Bitmap param) {
                 if (this.myVh.position == this.original_position) {
                     myVh.iv.setImageBitmap(param);
+                    myVh.tv.setText(petList.get(myVh.position).name);
                 } else
                     Toast.makeText(ViewPager2_Adapter.this.ctx, "YIKES! Recycler view reused, my result is useless", Toast.LENGTH_SHORT).show();
             }
@@ -316,12 +319,15 @@ public class MainActivity extends AppCompatActivity {
             PagerViewHolder viewHolder = (PagerViewHolder) holder;
             ConnectionCheck check = new ConnectionCheck(MainActivity.this);
             if(!check.isNetworkReachable() || petList.isEmpty()){
-                viewHolder.iv.setImageResource(R.drawable.ic_action_name);
+                viewHolder.tv.setText(R.string.noWifi);
+            }else{
+                viewHolder.tv.setText(R.string.loading);
             }
-            viewHolder.tv.setText(petList.get(position).name);
+            viewHolder.iv.setImageResource(R.drawable.ic_action_name);
             viewHolder.position = position;
             GetImage myTask = new GetImage(viewHolder);
             myTask.execute(new String[]{url + petList.get(position).file});
+
         }
 
         @Override
